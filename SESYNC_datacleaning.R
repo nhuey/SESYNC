@@ -833,12 +833,7 @@ duplicates <- duplicated(sesync_filtered_long[, c("Last Name", "First Name", "Pr
 
 dups <- sesync_filtered_long[which(duplicates),]
 
-
-dups[which(dups[, 1] == dups$`Project Code`[105]),]
-
 sesync_filtered_long_unique <- unique(sesync_filtered_long)
-sesync_filtered_long_unique[which(sesync_filtered_long_unique$`Last Name` == "ahalt"),]
-
 
 
 #write_xlsx(sesync_filtered_long_unique, "~/Dropbox/SESYNC/updatedsesync_long_april4.xlsx")
@@ -890,5 +885,29 @@ for(i in 1:length(project.codes)){
 april_6 <- read_xlsx("~/Dropbox/SESYNC/SESYNC_April4_cleaned.xlsx")
 
 # I'm picking up from here to do whatever Alaina said in her last email
+project.types <- read_xlsx("~/Dropbox/SESYNC/project_types.xlsx")
+### GPT function
+extract_first_contiguous_substring <- function(string) {
+  # Use regular expression to find the first contiguous substring of characters
+  match <- regexpr("[A-Za-z]+", string)
+  
+  if (match == -1) {
+    # If no match is found, return an empty string
+    return("")
+  } else {
+    # Extract the matched substring
+    return(substr(string, match, match + attr(match, "match.length") - 1))
+  }
+}
+### GPT function
+p.types <- as.vector(sapply(april_6$`Project Code`, extract_first_contiguous_substring))
 
+project.types <- project.types$`Project Type`[p.types]
+april_6$`Project Type` <- NA
+for(i in 1:nrow(april_6)){
+  if(!(p.types[i] %in% project.types$`Letters in Code`)){next}
+  p.type <- project.types$`Project Type`[which(project.types$`Letters in Code` == p.types[i] )]
+  april_6$`Project Type`[i] <- p.type
+}
 
+write_xlsx(april_6, "~/Dropbox/SESYNC/april_6.xlsx")
